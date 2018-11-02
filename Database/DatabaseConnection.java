@@ -8,6 +8,9 @@
 
 package Database;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.util.Date;
 import java.util.TimeZone;
@@ -20,6 +23,16 @@ public class DatabaseConnection {
     public DatabaseConnection(int uid){
         //TODO: process userID and ensure it's legit otherwise fail.
         userID = uid;
+        try{
+            String databaseFolder = "./data";
+            if(!Files.isDirectory(Paths.get(databaseFolder))){
+                Files.createDirectory(Paths.get(databaseFolder));
+            }
+        }catch(IOException e){
+            System.out.println("Failed to create data folder, filesystem not intact. Failing with error: " + e.getMessage());
+            return;
+        }
+        
         try{
             Class.forName("org.sqlite.JDBC");
         }catch(ClassNotFoundException e){
