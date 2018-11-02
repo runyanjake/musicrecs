@@ -20,6 +20,15 @@ import java.text.SimpleDateFormat;
 public class DatabaseConnection {
     Connection conn;
     int userID;
+
+    static ResultSet verifyUser(String user, String pass){
+        return null;
+    }
+
+    static boolean createUser(){
+        return false;
+    }
+
     public DatabaseConnection(int uid){
         //TODO: process userID and ensure it's legit otherwise fail.
         userID = uid;
@@ -51,6 +60,16 @@ public class DatabaseConnection {
                 stmt.execute(sql);
             } catch (SQLException e) {
                 System.out.println("Failed to create/verify database for user " + userID + ": " + e.getMessage());
+                return;
+            }
+            //table setup
+            sql = "CREATE TABLE IF NOT EXISTS USERS(uid integer,firstname TEXT,lastname TEXT,username TEXT PRIMARY_KEY,password TEXT);";
+            try{
+                Statement stmt = conn.createStatement();
+                stmt.execute(sql);
+            } catch (SQLException e) {
+                System.out.println("Failed to create user table: " + e.getMessage());
+                return;
             }
         }
         System.out.println("A new Database Connection abstraction was created for user " + userID + ".");
