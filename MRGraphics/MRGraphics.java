@@ -43,6 +43,7 @@ public class MRGraphics {
 
     
     JComboBox suggestion_rec_type;
+    JTextField suggestion_recipient;
     JButton suggestion_cancel;
     JButton suggestion_submit;
     JTextField suggestion_artist;
@@ -72,6 +73,7 @@ public class MRGraphics {
     String ALBUM_BOX_DEFAULT_TEXT = "Album";
     String SONG_BOX_DEFAULT_TEXT = "Song";
     String LINK_BOX_DEFAULT_TEXT = "Link";
+    String RECIPIENT_USERNAME_BOX_DEFAULT_TEXT = "Recipient's Username";
 
     public MRGraphics(){
         frame = new JFrame(APP_TITLE);
@@ -139,13 +141,16 @@ public class MRGraphics {
         //Suggestion Page
         String[] rec_types = {"Song", "Album", "Artist", "Playlist"};
         suggestion_rec_type = new JComboBox(rec_types);
+        suggestion_recipient = new JTextField(RECIPIENT_USERNAME_BOX_DEFAULT_TEXT);
         suggestion_cancel = new JButton(CANCEL_BUTTON_TEXT);
         suggestion_artist = new JTextField(ARTIST_BOX_DEFAULT_TEXT);
         suggestion_album = new JTextField(ALBUM_BOX_DEFAULT_TEXT);
         suggestion_song = new JTextField(SONG_BOX_DEFAULT_TEXT);
         suggestion_link = new JTextField(LINK_BOX_DEFAULT_TEXT);
         suggestion_submit = new JButton(SUBMIT_BUTTON_TEXT);
+        suggestion_submit.addActionListener(new submitRecActionListener());
         suggestion_cancel.addActionListener(new gotoHomeListener());
+        suggestion_page.add(suggestion_recipient);
         suggestion_page.add(suggestion_rec_type);
         suggestion_page.add(suggestion_artist);
         suggestion_page.add(suggestion_album);
@@ -202,6 +207,7 @@ public class MRGraphics {
         suggestion_album.setText(ALBUM_BOX_DEFAULT_TEXT);
         suggestion_song.setText(SONG_BOX_DEFAULT_TEXT);
         suggestion_link.setText(LINK_BOX_DEFAULT_TEXT);
+        suggestion_recipient.setText(RECIPIENT_USERNAME_BOX_DEFAULT_TEXT);
     }
 
     private boolean login(){
@@ -278,6 +284,26 @@ public class MRGraphics {
         @Override
         public void actionPerformed(ActionEvent ae){
             //TODO
+        }
+    }
+
+    //attempts to submit a recommendation 
+    private class submitRecActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent ae){
+            System.out.println("Trynna submit a thang.");
+            if(user == null){
+                //submitting as anonymous
+            }else{
+                boolean validRecipient = gdc.userExists(suggestion_recipient.getText());
+                System.out.println("User " + suggestion_recipient.getText() + " valid? : " + validRecipient);
+                if(validRecipient){
+                    udc.addEntry((String)suggestion_rec_type.getSelectedItem(), suggestion_artist.getText(), suggestion_album.getText(), suggestion_song.getText(), suggestion_link.getText());
+                }else{
+                    //do something when user doesn't exist
+                }
+
+            }
         }
     }
 

@@ -69,6 +69,23 @@ public class GenericDatabaseConnection {
         }
     }
 
+    public boolean userExists(String user){
+        String sql = "SELECT * FROM USERS u WHERE u.username = '" + user + "';";
+        try{
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            System.out.println("Executed SQL: " + sql);
+            if(rs.next()){
+                return true;
+            }else{
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println("Failed to verify user " + user + ": " + e.getMessage());
+            return false;
+        }
+    }
+
     public boolean createUser(String firstname, String lastname, String user, String pass){
         int new_uid;
         try{
