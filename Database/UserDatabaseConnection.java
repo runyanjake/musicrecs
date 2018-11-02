@@ -1,5 +1,5 @@
 /**
- * MusicRecs.java
+ * UserDatabaseConnection.java
  * @author Jake Runyan
  * https://github.com/runyanjake/musicrecs/
  * Represents a user's connection to their corresponding database table of recommendations.
