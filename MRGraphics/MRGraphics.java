@@ -83,7 +83,7 @@ public class MRGraphics {
         login_user = new JTextField("Username");
         login_pass = new JPasswordField("Password");
         login_goto_signup.addActionListener(new gotoSignupListener());
-        login_submit.addActionListener(new LoginSubmitListener());
+        login_submit.addActionListener(new LoginActionListener());
         login_page.add(login_user);
         login_page.add(login_pass);
         login_page.add(login_submit);
@@ -98,7 +98,7 @@ public class MRGraphics {
         signup_pass = new JTextField("Password");
         signup_pass_verify = new JTextField("Verify Password");
         signup_goto_login.addActionListener(new gotoLoginListener());
-        signup_submit.addActionListener(new SignupSubmitListener());
+        signup_submit.addActionListener(new SignupActionListener());
         signup_page.add(signup_fn);
         signup_page.add(signup_ln);
         signup_page.add(signup_user);
@@ -108,7 +108,14 @@ public class MRGraphics {
         signup_page.add(signup_goto_login);
 
         //Home Page
+        JButton home_logout = new JButton("Log Out");
+        JButton home_goto_suggestion = new JButton("Make a Suggestion");
         
+        home_goto_suggestion.addActionListener(new gotoSuggestionListener());
+        home_logout.addActionListener(new LogoutActionListener());
+        
+        home_page.add(home_goto_suggestion);
+        home_page.add(home_logout);
 
         //Suggestion Page
         String[] rec_types = {"Song", "Album", "Artist", "Playlist"};
@@ -197,8 +204,18 @@ public class MRGraphics {
         udc = null;
         user = null;
     }
+    
+    private class LogoutActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent ae){
+            logout();
+            CardLayout layout_ref = (CardLayout)window.getLayout();
+            frame.setTitle(APP_TITLE);
+            layout_ref.show(window, "landing");
+        }
+    }
 
-    private class LoginSubmitListener implements ActionListener {
+    private class LoginActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent ae){
             logout(); //just in case
@@ -211,7 +228,7 @@ public class MRGraphics {
         }
     }
 
-    private class SignupSubmitListener implements ActionListener {
+    private class SignupActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent ae){
             //TODO
