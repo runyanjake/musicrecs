@@ -12,6 +12,8 @@ import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -29,6 +31,8 @@ public class MRGraphics {
     JButton login_submit;
     JTextField login_user;
     JPasswordField login_pass;
+
+
 
     GenericDatabaseConnection gdc;
     UserDatabaseConnection udc;
@@ -67,10 +71,31 @@ public class MRGraphics {
 
     private class LoginSubmitListener implements ActionListener {
         @Override
-        public void actionPerformed(ActionEvent e){
+        public void actionPerformed(ActionEvent ae){
             String user = login_user.getText();
             String pass = new String(login_pass.getPassword());
-            System.out.println("Login Button Clicked. Attempting to verify user (" + login_user.getText() + ", " + pass + ").");
+            try{
+                ResultSet rs = gdc.verifyUser(user,pass);
+                String pw = null;
+                while(rs.next()){
+                    pw = rs.getString(5);
+                }
+                if(pw == null){
+                    System.out.println("User does not exist, popping up an alert for incorrect login. (TODO).");
+                    //TODO: Throw some popup for incorrect login
+                }else{   
+                    System.out.println("Correct PW: " + pw + " Supplied PW: " + pass);
+                    if (pw.equals(pass)){
+                        System.out.println("User is verified, logging them in (TODO).");
+                        //TODO: Login and swap card
+                    }else{
+                        System.out.println("User is not verified (provided incorrect password), popping up an alert for incorrect login. (TODO).");
+                        //TODO: Throw some popup for incorrect login
+                    }
+                }   
+            }catch(SQLException e){
+                System.out.println("Failed to check user against database: " + e.getMessage());
+            }
         }
     }
 }

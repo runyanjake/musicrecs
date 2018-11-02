@@ -45,7 +45,7 @@ public class GenericDatabaseConnection {
         }catch(SQLException e){
             System.out.println("SQLite Error Caught Upon Connection: " + e.getMessage());
         }finally{
-            String sql = "CREATE TABLE IF NOT EXISTS USERS(uid integer,firstname TEXT,lastname TEXT,username TEXT PRIMARY_KEY,password TEXT);";
+            String sql = "CREATE TABLE IF NOT EXISTS USERS(uid integer,firstname TEXT,lastname TEXT,username TEXT PRIMARY KEY,password TEXT);";
             try{
                 Statement stmt = conn.createStatement();
                 stmt.execute(sql);
@@ -54,15 +54,43 @@ public class GenericDatabaseConnection {
                 return;
             }
         }
-
     }
 
     public ResultSet verifyUser(String user, String pass){
-        return null;
+        String sql = "SELECT * FROM USERS u WHERE u.username = '" + user + "';";
+        try{
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            System.out.println("Executed SQL: " + sql);
+            return rs;
+        } catch (SQLException e) {
+            System.out.println("Failed to verify user " + user + ": " + e.getMessage());
+            return null;
+        }
     }
 
-    public boolean createUser(){
-        return false;
+    public boolean createUser(String firstname, String lastname, String user, String pass){
+        int new_uid;
+        try{
+            String sql = "SELECT COUNT(username) FROM USERS;";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            new_uid = rs.getInt(1) + 1;
+        }catch(SQLException e){
+            System.out.println("Failed to query database: " + e.getMessage());
+            return false;
+        }
+
+        String sql = "INSERT INTO USERS VALUES( " + new_uid + ",'" + firstname + "','" + lastname + "','" + user + "','" + pass + "');";
+        try{
+            Statement stmt = conn.createStatement();
+            stmt.execute(sql);
+            System.out.println("Executed SQL: " + sql);
+            return true;
+        } catch (SQLException e) {
+            System.out.println("User " + user + " could not be created: " + e.getMessage());
+            return false;
+        }
     }
 
     public void closeConnection(){
