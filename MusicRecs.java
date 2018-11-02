@@ -4,7 +4,6 @@
  * https://github.com/runyanjake/musicrecs/
  */
 
-import Database.DatabaseConnection;
 import MRGraphics.MRGraphics;
 import java.sql.ResultSet;
 import java.sql.SQLException;

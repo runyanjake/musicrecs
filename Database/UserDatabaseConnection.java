@@ -17,7 +17,7 @@ import java.util.TimeZone;
 
 import java.text.SimpleDateFormat;
 
-public class DatabaseConnection {
+public class UserDatabaseConnection {
     Connection conn;
     int userID;
 
@@ -29,27 +29,21 @@ public class DatabaseConnection {
         return false;
     }
 
-    public DatabaseConnection(int uid){
+    //Special Database connection to a specific user's table.
+    public UserDatabaseConnection(int uid){
         //TODO: process userID and ensure it's legit otherwise fail.
         userID = uid;
-        try{
-            String databaseFolder = "./data";
-            if(!Files.isDirectory(Paths.get(databaseFolder))){
-                Files.createDirectory(Paths.get(databaseFolder));
-            }
-        }catch(IOException e){
-            System.out.println("Failed to create data folder, filesystem not intact. Failing with error: " + e.getMessage());
-            return;
-        }
         
         try{
             Class.forName("org.sqlite.JDBC");
         }catch(ClassNotFoundException e){
             System.out.println("ClassNotFound Error Caught Upon Database Connection: " + e.getMessage());
         }
+
         String url = "jdbc:sqlite:./data/musicrecs.sqlite";
         try{
-            conn = DriverManager.getConnection(url);
+            if(conn == null)
+                conn = DriverManager.getConnection(url);
         }catch(SQLException e){
             System.out.println("SQLite Error Caught Upon Connection: " + e.getMessage());
         }finally{
@@ -60,15 +54,6 @@ public class DatabaseConnection {
                 stmt.execute(sql);
             } catch (SQLException e) {
                 System.out.println("Failed to create/verify database for user " + userID + ": " + e.getMessage());
-                return;
-            }
-            //table setup
-            sql = "CREATE TABLE IF NOT EXISTS USERS(uid integer,firstname TEXT,lastname TEXT,username TEXT PRIMARY_KEY,password TEXT);";
-            try{
-                Statement stmt = conn.createStatement();
-                stmt.execute(sql);
-            } catch (SQLException e) {
-                System.out.println("Failed to create user table: " + e.getMessage());
                 return;
             }
         }

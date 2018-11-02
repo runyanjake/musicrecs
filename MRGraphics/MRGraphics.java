@@ -19,6 +19,9 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
+import Database.GenericDatabaseConnection;
+import Database.UserDatabaseConnection;
+
 public class MRGraphics {
     JFrame frame;
     JPanel window;
@@ -26,6 +29,9 @@ public class MRGraphics {
     JButton login_submit;
     JTextField login_user;
     JPasswordField login_pass;
+
+    GenericDatabaseConnection gdc;
+    UserDatabaseConnection udc;
 
     public MRGraphics(){
         frame = new JFrame("MusicRecs by Jake Runyan");
@@ -51,6 +57,9 @@ public class MRGraphics {
         window.add(home_page, "Home");
         window.add(reccomendation_page, "");
         frame.add(window);
+
+        gdc = new GenericDatabaseConnection();
+        udc = null;
 
         frame.pack();
         frame.setVisible(true);
