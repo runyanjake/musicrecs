@@ -44,6 +44,7 @@ public class MRGraphics {
     
     JComboBox suggestion_rec_type;
     JButton suggestion_cancel;
+    JButton suggestion_submit;
     JTextField suggestion_artist;
     JTextField suggestion_album;
     JTextField suggestion_song;
@@ -53,6 +54,24 @@ public class MRGraphics {
     UserDatabaseConnection udc;
 
     String APP_TITLE = "MusicRecs by Jake Runyan";
+    
+    String LOGIN_BUTTON_TEXT = "Log In";
+    String LOGOUT_BUTTON_TEXT = "Log Out";
+    String SIGNUP_BUTTON_TEXT = "Sign Up";
+    String SUBMIT_BUTTON_TEXT = "Submit";
+    String MAKE_SUGGESTION_BUTTON_TEXT = "Make Suggestion";
+    String MAKE_ANONYMOUS_SUGGESTION_BUTTON_TEXT = "Make Anonymous Suggestion";
+    String CANCEL_BUTTON_TEXT = "Cancel";
+
+    String USERNAME_BOX_DEFAULT_TEXT = "Username";
+    String PASSWORD_BOX_DEFAULT_TEXT = "Password";
+    String PASSWORD_VERIFY_BOX_DEFAULT_TEXT = "Verify Password";
+    String FIRSTNAME_BOX_DEFAULT_TEXT = "First Name";
+    String LASTNAME_BOX_DEFAULT_TEXT = "Last Name";
+    String ARTIST_BOX_DEFAULT_TEXT = "Artist";
+    String ALBUM_BOX_DEFAULT_TEXT = "Album";
+    String SONG_BOX_DEFAULT_TEXT = "Song";
+    String LINK_BOX_DEFAULT_TEXT = "Link";
 
     public MRGraphics(){
         frame = new JFrame(APP_TITLE);
@@ -64,12 +83,12 @@ public class MRGraphics {
         JPanel login_page = new JPanel();
         JPanel signup_page = new JPanel();
         JPanel home_page = new JPanel();
-        JPanel reccomendation_page = new JPanel();
+        JPanel suggestion_page = new JPanel();
 
         //Landing Page
         JButton landing_anonymous = new JButton("Leave Anonymous Suggestion");
-        JButton landing_signup = new JButton("Sign Up");
-        JButton landing_login = new JButton("Login");
+        JButton landing_signup = new JButton(SIGNUP_BUTTON_TEXT);
+        JButton landing_login = new JButton(LOGIN_BUTTON_TEXT);
         landing_anonymous.addActionListener(new gotoSuggestionListener());
         landing_signup.addActionListener(new gotoSignupListener());
         landing_login.addActionListener(new gotoLoginListener());
@@ -78,10 +97,10 @@ public class MRGraphics {
         landing_page.add(landing_signup);
 
         //Login Page
-        JButton login_goto_signup = new JButton("Sign Up");
-        JButton login_submit = new JButton("Login");
-        login_user = new JTextField("Username");
-        login_pass = new JPasswordField("Password");
+        JButton login_goto_signup = new JButton(SIGNUP_BUTTON_TEXT);
+        JButton login_submit = new JButton(LOGIN_BUTTON_TEXT);
+        login_user = new JTextField(USERNAME_BOX_DEFAULT_TEXT);
+        login_pass = new JPasswordField(PASSWORD_BOX_DEFAULT_TEXT);
         login_goto_signup.addActionListener(new gotoSignupListener());
         login_submit.addActionListener(new LoginActionListener());
         login_page.add(login_user);
@@ -90,13 +109,13 @@ public class MRGraphics {
         login_page.add(login_goto_signup);
 
         //Signup Page
-        JButton signup_goto_login = new JButton("Login");
-        JButton signup_submit = new JButton("Sign Up");
-        signup_fn = new JTextField("First Name");
-        signup_ln = new JTextField("Last Name");
-        signup_user = new JTextField("Username");
-        signup_pass = new JTextField("Password");
-        signup_pass_verify = new JTextField("Verify Password");
+        JButton signup_goto_login = new JButton(LOGIN_BUTTON_TEXT);
+        JButton signup_submit = new JButton(SIGNUP_BUTTON_TEXT);
+        signup_fn = new JTextField(FIRSTNAME_BOX_DEFAULT_TEXT);
+        signup_ln = new JTextField(LASTNAME_BOX_DEFAULT_TEXT);
+        signup_user = new JTextField(USERNAME_BOX_DEFAULT_TEXT);
+        signup_pass = new JTextField(PASSWORD_BOX_DEFAULT_TEXT);
+        signup_pass_verify = new JTextField(PASSWORD_VERIFY_BOX_DEFAULT_TEXT);
         signup_goto_login.addActionListener(new gotoLoginListener());
         signup_submit.addActionListener(new SignupActionListener());
         signup_page.add(signup_fn);
@@ -108,8 +127,8 @@ public class MRGraphics {
         signup_page.add(signup_goto_login);
 
         //Home Page
-        JButton home_logout = new JButton("Log Out");
-        JButton home_goto_suggestion = new JButton("Make a Suggestion");
+        JButton home_logout = new JButton(LOGOUT_BUTTON_TEXT);
+        JButton home_goto_suggestion = new JButton(MAKE_SUGGESTION_BUTTON_TEXT);
         
         home_goto_suggestion.addActionListener(new gotoSuggestionListener());
         home_logout.addActionListener(new LogoutActionListener());
@@ -120,25 +139,27 @@ public class MRGraphics {
         //Suggestion Page
         String[] rec_types = {"Song", "Album", "Artist", "Playlist"};
         suggestion_rec_type = new JComboBox(rec_types);
-        suggestion_cancel = new JButton("Cancel");
-        suggestion_artist = new JTextField("Artist");
-        suggestion_album = new JTextField("Album");
-        suggestion_song = new JTextField("Song");
-        suggestion_link = new JTextField("Link");
+        suggestion_cancel = new JButton(CANCEL_BUTTON_TEXT);
+        suggestion_artist = new JTextField(ARTIST_BOX_DEFAULT_TEXT);
+        suggestion_album = new JTextField(ALBUM_BOX_DEFAULT_TEXT);
+        suggestion_song = new JTextField(SONG_BOX_DEFAULT_TEXT);
+        suggestion_link = new JTextField(LINK_BOX_DEFAULT_TEXT);
+        suggestion_submit = new JButton(SUBMIT_BUTTON_TEXT);
         suggestion_cancel.addActionListener(new gotoHomeListener());
-        reccomendation_page.add(suggestion_rec_type);
-        reccomendation_page.add(suggestion_artist);
-        reccomendation_page.add(suggestion_album);
-        reccomendation_page.add(suggestion_song);
-        reccomendation_page.add(suggestion_link);
-        reccomendation_page.add(suggestion_cancel);
+        suggestion_page.add(suggestion_rec_type);
+        suggestion_page.add(suggestion_artist);
+        suggestion_page.add(suggestion_album);
+        suggestion_page.add(suggestion_song);
+        suggestion_page.add(suggestion_link);
+        suggestion_page.add(suggestion_cancel);
+        suggestion_page.add(suggestion_submit);
         if(user == null){
-            JButton suggestion_goto_login = new JButton("Login");
-            JButton suggestion_goto_signup = new JButton("Sign Up");
+            JButton suggestion_goto_login = new JButton(LOGIN_BUTTON_TEXT);
+            JButton suggestion_goto_signup = new JButton(SIGNUP_BUTTON_TEXT);
             suggestion_goto_login.addActionListener(new gotoLoginListener());
             suggestion_goto_signup.addActionListener(new gotoSignupListener());
-            reccomendation_page.add(suggestion_goto_login);
-            reccomendation_page.add(suggestion_goto_signup);
+            suggestion_page.add(suggestion_goto_login);
+            suggestion_page.add(suggestion_goto_signup);
         }
         
 
@@ -146,9 +167,9 @@ public class MRGraphics {
         window.add(landing_page, "landing");
         window.add(login_page, "login");
         window.add(home_page, "home");
-        window.add(reccomendation_page, "recs");
+        window.add(suggestion_page, "recs");
         window.add(signup_page, "signup");
-        window.add(reccomendation_page, "suggestion");
+        window.add(suggestion_page, "suggestion");
         frame.add(window);
 
         gdc = new GenericDatabaseConnection();
@@ -159,7 +180,31 @@ public class MRGraphics {
         frame.setVisible(true);
     }
 
-    public boolean login(){
+    private void resetLoginPage(){
+        login_user.setText(USERNAME_BOX_DEFAULT_TEXT);
+        login_pass.setText(PASSWORD_BOX_DEFAULT_TEXT);
+    }
+
+    private void resetSignupPage(){
+        signup_fn.setText(FIRSTNAME_BOX_DEFAULT_TEXT);
+        signup_ln.setText(LASTNAME_BOX_DEFAULT_TEXT);
+        signup_user.setText(USERNAME_BOX_DEFAULT_TEXT);
+        signup_pass.setText(PASSWORD_BOX_DEFAULT_TEXT);
+        signup_pass_verify.setText(PASSWORD_VERIFY_BOX_DEFAULT_TEXT);
+    }
+
+    private void resetHomePage(){
+        //nothing yet(should reset user values based on stored user instance)
+    }
+
+    private void resetSuggestionPage(){
+        suggestion_artist.setText(ARTIST_BOX_DEFAULT_TEXT);
+        suggestion_album.setText(ALBUM_BOX_DEFAULT_TEXT);
+        suggestion_song.setText(SONG_BOX_DEFAULT_TEXT);
+        suggestion_link.setText(LINK_BOX_DEFAULT_TEXT);
+    }
+
+    private boolean login(){
         if(udc != null){
             System.out.println("ERROR: Bad Flow, a user is already logged in.");
         }
@@ -200,7 +245,7 @@ public class MRGraphics {
         }
     }
 
-    public void logout(){
+    private void logout(){
         udc = null;
         user = null;
     }
@@ -221,6 +266,7 @@ public class MRGraphics {
             logout(); //just in case
             boolean success = login();
             if(success){
+                resetHomePage();
                 CardLayout layout_ref = (CardLayout)window.getLayout();
                 frame.setTitle(user.getFirstName() + "'s Home");
                 layout_ref.show(window, "home");
@@ -239,6 +285,7 @@ public class MRGraphics {
     private class gotoSignupListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent ae){
+            resetSignupPage();
             CardLayout layout_ref = (CardLayout)window.getLayout();
             frame.setTitle("Sign Up");
             layout_ref.show(window, "signup");
@@ -249,6 +296,7 @@ public class MRGraphics {
     private class gotoLoginListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent ae){
+            resetLoginPage();
             CardLayout layout_ref = (CardLayout)window.getLayout();
             frame.setTitle("Login");
             layout_ref.show(window, "login");
@@ -259,6 +307,7 @@ public class MRGraphics {
     private class gotoSuggestionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent ae){
+            resetSuggestionPage();
             CardLayout layout_ref = (CardLayout)window.getLayout();
             frame.setTitle("Submit a Suggestion");
             layout_ref.show(window, "suggestion");
@@ -271,6 +320,7 @@ public class MRGraphics {
         @Override
         public void actionPerformed(ActionEvent ae){
             if(user != null){
+                resetHomePage();
                 CardLayout layout_ref = (CardLayout)window.getLayout();
                 frame.setTitle(user.getFirstName() + "'s Home");
                 layout_ref.show(window, "home");
