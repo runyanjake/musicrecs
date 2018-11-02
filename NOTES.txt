@@ -1,0 +1,3 @@
+Database Setup:
+    - sqlite.jdbc jar file must exist in the directory specified by the command line flag linking it to Java's CLASSPATH (could also manually add to CP). 
+    - I used xerial's version online which seems standard for sqlite piping jdbc to sqlite.
