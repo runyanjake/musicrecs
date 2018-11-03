@@ -17,6 +17,8 @@ import java.util.TimeZone;
 
 import java.text.SimpleDateFormat;
 
+import Database.User;
+
 public class DatabaseConnection {
     Connection conn;
     int userID;
@@ -64,8 +66,22 @@ public class DatabaseConnection {
         System.out.println("A new Database Connection abstraction was created.");
     }
 
-    public void setUser(int user){
+    public void setCurrentUser(int user){
         userID = user;
+    }
+
+    public User getCurrentUser(int uid){
+        String sql = "SELECT * FROM USERS u WHERE u.uid = " + uid + ";";
+        try{
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            System.out.println("Executed SQL: " + sql);
+            User usr = new User(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5));
+            return usr;
+        } catch (SQLException e) {
+            System.out.println("User did not exist: " + e.getMessage());
+            return null;
+        }
     }
 
     public ResultSet verifyUser(String user, String pass){
@@ -81,24 +97,24 @@ public class DatabaseConnection {
         }
     }
 
-    public boolean userExists(String user){
+    public int userExists(String user){
         String sql = "SELECT * FROM USERS u WHERE u.username = '" + user + "';";
         try{
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             System.out.println("Executed SQL: " + sql);
             if(rs.next()){
-                return true;
+                return rs.getInt(1);
             }else{
-                return false;
+                return -1;
             }
         } catch (SQLException e) {
             System.out.println("Failed to verify user " + user + ": " + e.getMessage());
-            return false;
+            return -1;
         }
     }
 
-    public boolean createUser(String firstname, String lastname, String user, String pass){
+    public int createUser(String firstname, String lastname, String user, String pass){
         int new_uid;
         try{
             String sql = "SELECT COUNT(username) FROM USERS;";
@@ -107,7 +123,7 @@ public class DatabaseConnection {
             new_uid = rs.getInt(1) + 1;
         }catch(SQLException e){
             System.out.println("Failed to query database: " + e.getMessage());
-            return false;
+            return -1;
         }
 
         String sql = "INSERT INTO USERS VALUES( " + new_uid + ",'" + firstname + "','" + lastname + "','" + user + "','" + pass + "');";
@@ -115,15 +131,19 @@ public class DatabaseConnection {
             Statement stmt = conn.createStatement();
             stmt.execute(sql);
             System.out.println("Executed SQL: " + sql);
-            return true;
+            return new_uid;
         } catch (SQLException e) {
             System.out.println("User " + user + " could not be created: " + e.getMessage());
-            return false;
+            return -1;
         }
     }
 
-    public boolean addEntry(String rec_type, String artist, String album, String song, String link){
-        String sql = "SELECT COUNT(id_num) FROM USER_" + userID + "_RECS;";
+    public boolean addEntry(String recipientUsername, String rec_type, String artist, String album, String song, String link){
+        int recipientID = userExists(recipientUsername);
+        if(recipientID == -1){
+            return false;
+        }
+        String sql = "SELECT COUNT(id_num) FROM USER_" + recipientUsername + "_RECS;";
         try{
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
@@ -134,12 +154,12 @@ public class DatabaseConnection {
             dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
             String date = "" + dateFormat.format(d);
 
-            sql = "INSERT INTO USER_" + userID + "_RECS VALUES (" + (tableSize+1) + ",'" + date + "','" + rec_type + "','" + artist + "','" + album + "','" + song + "','" + link + "');";
+            sql = "INSERT INTO USER_" + recipientUsername + "_RECS VALUES (" + (tableSize+1) + ",'" + date + "','" + rec_type + "','" + artist + "','" + album + "','" + song + "','" + link + "');";
             boolean success = executeSQL(sql);
             if(!success) return false;
             System.out.println("Executed SQL: " + sql);
         } catch (SQLException e) {
-            System.out.println("Failed to add entry to database for user " + userID + ": " + e.getMessage());
+            System.out.println("Failed to add entry to database for user " + recipientUsername + ": " + e.getMessage());
             return false;
         }
         return true;

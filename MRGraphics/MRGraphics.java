@@ -280,7 +280,15 @@ public class MRGraphics {
     private class SignupActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent ae){
-            //TODO
+            if(!signup_pass.getText().equals(signup_pass_verify.getText())){ return; }
+            int new_user_id = dc.createUser(signup_fn.getText(), signup_ln.getText(), signup_user.getText(), signup_pass.getText());
+            user = dc.getUser(new_user_id);
+            if(new_user_id > 0){
+                resetHomePage();
+                CardLayout layout_ref = (CardLayout)window.getLayout();
+                frame.setTitle(user.getFirstName() + "'s Home");
+                layout_ref.show(window, "home");
+            }
         }
     }
 
@@ -292,10 +300,10 @@ public class MRGraphics {
             if(user == null){
                 //submitting as anonymous
             }else{
-                boolean validRecipient = dc.userExists(suggestion_recipient.getText());
+                int validRecipient = dc.userExists(suggestion_recipient.getText());
                 System.out.println("User " + suggestion_recipient.getText() + " valid? : " + validRecipient);
-                if(validRecipient){
-                    dc.addEntry((String)suggestion_rec_type.getSelectedItem(), suggestion_artist.getText(), suggestion_album.getText(), suggestion_song.getText(), suggestion_link.getText());
+                if(validRecipient != -1){
+                    dc.addEntry(suggestion_recipient.getText(),(String)suggestion_rec_type.getSelectedItem(), suggestion_artist.getText(), suggestion_album.getText(), suggestion_song.getText(), suggestion_link.getText());
                 }else{
                     //do something when user doesn't exist
                 }
