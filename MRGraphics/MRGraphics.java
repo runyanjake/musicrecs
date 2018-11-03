@@ -175,7 +175,7 @@ public class MRGraphics {
         window.add(suggestion_page, "suggestion");
         frame.add(window);
 
-        dc = new DatabaseConnection(-1);
+        dc = new DatabaseConnection();
         user = null;
 
         frame.pack();
@@ -213,43 +213,31 @@ public class MRGraphics {
         }
         String form_user = login_user.getText();
         String form_pass = new String(login_pass.getPassword());
-        try{
-            ResultSet rs = dc.verifyUser(form_user,form_pass);
-            int uid = -1;
-            String fn = null;
-            String ln = null;
-            String usr = null;
-            String pw = null;
-            while(rs.next()){ uid = rs.getInt(1);
-                              fn = rs.getString(2);
-                              ln = rs.getString(3);
-                              usr = rs.getString(4);
-                              pw = rs.getString(5); }
-            if(pw == null){
-                System.out.println("User does not exist, popping up an alert for incorrect login. (TODO).");
+        boolean legitimate = dc.verifyUser(form_user,form_pass);
+        User usr = null;
+        if(legitimate){
+            usr = dc.getUser(form_user);
+        }
+        
+        if(usr == null){
+            System.out.println("User does not exist, popping up an alert for incorrect login. (TODO).");
+            //TODO: Throw some popup for incorrect login
+            return false;
+        }else{
+            if (usr.getPassword().equals(form_pass)){
+                System.out.println("User is verified, logging them in (TODO).");
+                //TODO: Login and swap card
+                user = usr;
+                return true;
+            }else{
+                System.out.println("User is not verified (provided incorrect password), popping up an alert for incorrect login. (TODO).");
                 //TODO: Throw some popup for incorrect login
                 return false;
-            }else{
-                if (pw.equals(form_pass)){
-                    System.out.println("User is verified, logging them in (TODO).");
-                    //TODO: Login and swap card
-                    user = new User(uid,fn,ln,usr,pw);
-                    dc.setUser(user.getUID());
-                    return true;
-                }else{
-                    System.out.println("User is not verified (provided incorrect password), popping up an alert for incorrect login. (TODO).");
-                    //TODO: Throw some popup for incorrect login
-                    return false;
-                }
-            }   
-        }catch(SQLException e){
-            System.out.println("Failed to check user against database: " + e.getMessage());
-            return false;
-        }
+            }
+        }   
     }
 
     private void logout(){
-        dc.setUser(-1);;
         user = null;
     }
     
@@ -281,9 +269,9 @@ public class MRGraphics {
         @Override
         public void actionPerformed(ActionEvent ae){
             if(!signup_pass.getText().equals(signup_pass_verify.getText())){ return; }
-            int new_user_id = dc.createUser(signup_fn.getText(), signup_ln.getText(), signup_user.getText(), signup_pass.getText());
-            user = dc.getUser(new_user_id);
-            if(new_user_id > 0){
+            User new_user = dc.createUser(signup_fn.getText(), signup_ln.getText(), signup_user.getText(), signup_pass.getText());
+            if(new_user != null){
+                user = new_user;
                 resetHomePage();
                 CardLayout layout_ref = (CardLayout)window.getLayout();
                 frame.setTitle(user.getFirstName() + "'s Home");
@@ -300,9 +288,8 @@ public class MRGraphics {
             if(user == null){
                 //submitting as anonymous
             }else{
-                int validRecipient = dc.userExists(suggestion_recipient.getText());
-                System.out.println("User " + suggestion_recipient.getText() + " valid? : " + validRecipient);
-                if(validRecipient != -1){
+                User recipient = dc.getUser(suggestion_recipient.getText());
+                if(recipient != null){
                     dc.addEntry(suggestion_recipient.getText(),(String)suggestion_rec_type.getSelectedItem(), suggestion_artist.getText(), suggestion_album.getText(), suggestion_song.getText(), suggestion_link.getText());
                 }else{
                     //do something when user doesn't exist

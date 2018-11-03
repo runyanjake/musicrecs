@@ -20,13 +20,11 @@ import java.text.SimpleDateFormat;
 import Database.User;
 
 public class DatabaseConnection {
-    Connection conn;
-    int userID;
+    
 
     //Default connection that sets up user table and verifies filestructure.
-    public DatabaseConnection(int uid){
+    public DatabaseConnection(){
         //TODO: process userID and ensure it's legit otherwise fail.
-        userID = uid;
         try{
             String databaseFolder = "./data";
             if(!Files.isDirectory(Paths.get(databaseFolder))){
@@ -37,41 +35,40 @@ public class DatabaseConnection {
             return;
         }
 
-        try{
-            Class.forName("org.sqlite.JDBC");
-        }catch(ClassNotFoundException e){
-            System.out.println("ClassNotFound Error Caught Upon Database Connection: " + e.getMessage());
-        }
-
+        Connection conn = null;
         String url = "jdbc:sqlite:./data/musicrecs.sqlite";
         try{
-            if(conn == null)
-                conn = DriverManager.getConnection(url);
+            Class.forName("org.sqlite.JDBC");
+            conn = DriverManager.getConnection(url);
         }catch(SQLException e){
             System.out.println("SQLite Error Caught Upon Connection: " + e.getMessage());
+        }catch(ClassNotFoundException e){
+            System.out.println("ClassNotFound Error Caught Upon Database Connection: " + e.getMessage());
         }finally{
             String sql = "CREATE TABLE IF NOT EXISTS USERS(uid integer,firstname TEXT,lastname TEXT,username TEXT PRIMARY KEY,password TEXT);";
             try{
                 Statement stmt = conn.createStatement();
                 stmt.execute(sql);
-                if(userID > 0){
-                    sql = "CREATE TABLE IF NOT EXISTS USER_" + userID + "_RECS(id_num integer PRIMARY_KEY,date_added TEXT PRIMARY_KEY,rec_type TEXT,artist TEXT,album TEXT,song TEXT,link TEXT);";
-                    stmt.execute(sql);
-                }
             } catch (SQLException e) {
-                System.out.println("Failed to create user table or specific user table: " + e.getMessage());
+                System.out.println("Failed to verify USERS table: " + e.getMessage());
                 return;
             }
         }
         System.out.println("A new Database Connection abstraction was created.");
     }
 
-    public void setCurrentUser(int user){
-        userID = user;
-    }
-
-    public User getCurrentUser(int uid){
-        String sql = "SELECT * FROM USERS u WHERE u.uid = " + uid + ";";
+    public User getUser(String username){
+        Connection conn = null;
+        String url = "jdbc:sqlite:./data/musicrecs.sqlite";
+        try{
+            Class.forName("org.sqlite.JDBC");
+            conn = DriverManager.getConnection(url);
+        }catch(SQLException e){
+            System.out.println("SQLite Error Caught Upon Connection: " + e.getMessage());
+        }catch(ClassNotFoundException e){
+            System.out.println("ClassNotFound Error Caught Upon Database Connection: " + e.getMessage());
+        }
+        String sql = "SELECT * FROM USERS u WHERE u.username = '" + username + "';";
         try{
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
@@ -84,37 +81,42 @@ public class DatabaseConnection {
         }
     }
 
-    public ResultSet verifyUser(String user, String pass){
-        String sql = "SELECT * FROM USERS u WHERE u.username = '" + user + "';";
+    public boolean verifyUser(String user, String pass){
+        Connection conn = null;
+        String url = "jdbc:sqlite:./data/musicrecs.sqlite";
+        try{
+            Class.forName("org.sqlite.JDBC");
+            conn = DriverManager.getConnection(url);
+        }catch(SQLException e){
+            System.out.println("SQLite Error Caught Upon Connection: " + e.getMessage());
+        }catch(ClassNotFoundException e){
+            System.out.println("ClassNotFound Error Caught Upon Database Connection: " + e.getMessage());
+        }
+        String sql = "SELECT * FROM USERS u WHERE u.username = '" + user + "' AND u.password = '" + pass + "';";
         try{
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(sql);
             System.out.println("Executed SQL: " + sql);
-            return rs;
+            if(rs.next())
+                return true;
+            return false;
         } catch (SQLException e) {
             System.out.println("Failed to verify user " + user + ": " + e.getMessage());
-            return null;
+            return false;
         }
     }
 
-    public int userExists(String user){
-        String sql = "SELECT * FROM USERS u WHERE u.username = '" + user + "';";
+    public User createUser(String firstname, String lastname, String user, String pass){
+        Connection conn = null;
+        String url = "jdbc:sqlite:./data/musicrecs.sqlite";
         try{
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql);
-            System.out.println("Executed SQL: " + sql);
-            if(rs.next()){
-                return rs.getInt(1);
-            }else{
-                return -1;
-            }
-        } catch (SQLException e) {
-            System.out.println("Failed to verify user " + user + ": " + e.getMessage());
-            return -1;
+            Class.forName("org.sqlite.JDBC");
+            conn = DriverManager.getConnection(url);
+        }catch(SQLException e){
+            System.out.println("SQLite Error Caught Upon Connection: " + e.getMessage());
+        }catch(ClassNotFoundException e){
+            System.out.println("ClassNotFound Error Caught Upon Database Connection: " + e.getMessage());
         }
-    }
-
-    public int createUser(String firstname, String lastname, String user, String pass){
         int new_uid;
         try{
             String sql = "SELECT COUNT(username) FROM USERS;";
@@ -123,7 +125,7 @@ public class DatabaseConnection {
             new_uid = rs.getInt(1) + 1;
         }catch(SQLException e){
             System.out.println("Failed to query database: " + e.getMessage());
-            return -1;
+            return null;
         }
 
         String sql = "INSERT INTO USERS VALUES( " + new_uid + ",'" + firstname + "','" + lastname + "','" + user + "','" + pass + "');";
@@ -131,16 +133,26 @@ public class DatabaseConnection {
             Statement stmt = conn.createStatement();
             stmt.execute(sql);
             System.out.println("Executed SQL: " + sql);
-            return new_uid;
+            return new User(new_uid, user, pass, firstname, lastname);
         } catch (SQLException e) {
             System.out.println("User " + user + " could not be created: " + e.getMessage());
-            return -1;
+            return null;
         }
     }
 
     public boolean addEntry(String recipientUsername, String rec_type, String artist, String album, String song, String link){
-        int recipientID = userExists(recipientUsername);
-        if(recipientID == -1){
+        Connection conn = null;
+        String url = "jdbc:sqlite:./data/musicrecs.sqlite";
+        try{
+            Class.forName("org.sqlite.JDBC");
+            conn = DriverManager.getConnection(url);
+        }catch(SQLException e){
+            System.out.println("SQLite Error Caught Upon Connection: " + e.getMessage());
+        }catch(ClassNotFoundException e){
+            System.out.println("ClassNotFound Error Caught Upon Database Connection: " + e.getMessage());
+        }
+        User recipient = getUser(recipientUsername);
+        if(recipient == null){
             return false;
         }
         String sql = "SELECT COUNT(id_num) FROM USER_" + recipientUsername + "_RECS;";
@@ -170,24 +182,44 @@ public class DatabaseConnection {
         return true;
     }
 
-    public ResultSet getEntries(){
+    public ResultSet getEntries(int userID){ //TODO: change to username
         String sql = "SELECT * FROM USER_" + userID + "_RECS;";
         return querySQL(sql);
     }
 
     private boolean executeSQL(String sql){
+        Connection conn = null;
+        String url = "jdbc:sqlite:./data/musicrecs.sqlite";
+        try{
+            Class.forName("org.sqlite.JDBC");
+            conn = DriverManager.getConnection(url);
+        }catch(SQLException e){
+            System.out.println("SQLite Error Caught Upon Connection: " + e.getMessage());
+        }catch(ClassNotFoundException e){
+            System.out.println("ClassNotFound Error Caught Upon Database Connection: " + e.getMessage());
+        }
         if(conn == null){ return false; }
         try{
             Statement stmt = conn.createStatement();
             stmt.execute(sql);
         } catch (SQLException e) {
-            System.out.println("Failed to create/verify database for user " + userID + ": " + e.getMessage());
+            System.out.println("Failed to create/verify database: " + e.getMessage());
             return false;
         }
         return true;
     }
 
     private ResultSet querySQL(String sql){
+        Connection conn = null;
+        String url = "jdbc:sqlite:./data/musicrecs.sqlite";
+        try{
+            Class.forName("org.sqlite.JDBC");
+            conn = DriverManager.getConnection(url);
+        }catch(SQLException e){
+            System.out.println("SQLite Error Caught Upon Connection: " + e.getMessage());
+        }catch(ClassNotFoundException e){
+            System.out.println("ClassNotFound Error Caught Upon Database Connection: " + e.getMessage());
+        }
         if(conn == null) return null;
         try{
             Statement stmt = conn.createStatement();
@@ -196,12 +228,22 @@ public class DatabaseConnection {
             System.out.println("Executed SQL: " + sql);
             return rs;
         } catch (SQLException e) {
-            System.out.println("Failed to add entry to database for user " + userID + ": " + e.getMessage());
+            System.out.println("Failed to add entry to database: " + e.getMessage());
             return null;
         }
     }
 
     public void closeConnection(){
+        Connection conn = null;
+        String url = "jdbc:sqlite:./data/musicrecs.sqlite";
+        try{
+            Class.forName("org.sqlite.JDBC");
+            conn = DriverManager.getConnection(url);
+        }catch(SQLException e){
+            System.out.println("SQLite Error Caught Upon Connection: " + e.getMessage());
+        }catch(ClassNotFoundException e){
+            System.out.println("ClassNotFound Error Caught Upon Database Connection: " + e.getMessage());
+        }
         /*Note: should be called before deletion/calling finalize()*/
         try {
             if (conn != null) {
