@@ -22,8 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
-import Database.GenericDatabaseConnection;
-import Database.UserDatabaseConnection;
+import Database.DatabaseConnection;
 import Database.User;
 
 public class MRGraphics {
@@ -51,8 +50,7 @@ public class MRGraphics {
     JTextField suggestion_song;
     JTextField suggestion_link;
 
-    GenericDatabaseConnection gdc;
-    UserDatabaseConnection udc;
+    DatabaseConnection dc;
 
     String APP_TITLE = "MusicRecs by Jake Runyan";
     
@@ -177,8 +175,7 @@ public class MRGraphics {
         window.add(suggestion_page, "suggestion");
         frame.add(window);
 
-        gdc = new GenericDatabaseConnection();
-        udc = null;
+        dc = new DatabaseConnection(-1);
         user = null;
 
         frame.pack();
@@ -211,13 +208,13 @@ public class MRGraphics {
     }
 
     private boolean login(){
-        if(udc != null){
+        if(user != null){
             System.out.println("ERROR: Bad Flow, a user is already logged in.");
         }
         String form_user = login_user.getText();
         String form_pass = new String(login_pass.getPassword());
         try{
-            ResultSet rs = gdc.verifyUser(form_user,form_pass);
+            ResultSet rs = dc.verifyUser(form_user,form_pass);
             int uid = -1;
             String fn = null;
             String ln = null;
@@ -237,7 +234,7 @@ public class MRGraphics {
                     System.out.println("User is verified, logging them in (TODO).");
                     //TODO: Login and swap card
                     user = new User(uid,fn,ln,usr,pw);
-                    udc = new UserDatabaseConnection(user.getUID());
+                    dc.setUser(user.getUID());
                     return true;
                 }else{
                     System.out.println("User is not verified (provided incorrect password), popping up an alert for incorrect login. (TODO).");
@@ -252,7 +249,7 @@ public class MRGraphics {
     }
 
     private void logout(){
-        udc = null;
+        dc.setUser(-1);;
         user = null;
     }
     
@@ -295,10 +292,10 @@ public class MRGraphics {
             if(user == null){
                 //submitting as anonymous
             }else{
-                boolean validRecipient = gdc.userExists(suggestion_recipient.getText());
+                boolean validRecipient = dc.userExists(suggestion_recipient.getText());
                 System.out.println("User " + suggestion_recipient.getText() + " valid? : " + validRecipient);
                 if(validRecipient){
-                    udc.addEntry((String)suggestion_rec_type.getSelectedItem(), suggestion_artist.getText(), suggestion_album.getText(), suggestion_song.getText(), suggestion_link.getText());
+                    dc.addEntry((String)suggestion_rec_type.getSelectedItem(), suggestion_artist.getText(), suggestion_album.getText(), suggestion_song.getText(), suggestion_link.getText());
                 }else{
                     //do something when user doesn't exist
                 }

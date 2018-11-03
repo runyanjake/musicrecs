@@ -1,5 +1,5 @@
 /**
- * UserDatabaseConnection.java
+ * GenericDatabaseConnection.java
  * @author Jake Runyan
  * https://github.com/runyanjake/musicrecs/
  * Represents a user's connection to their corresponding database table of recommendations.
@@ -17,23 +17,24 @@ import java.util.TimeZone;
 
 import java.text.SimpleDateFormat;
 
-public class UserDatabaseConnection {
+public class DatabaseConnection {
     Connection conn;
     int userID;
 
-    static ResultSet verifyUser(String user, String pass){
-        return null;
-    }
-
-    static boolean createUser(){
-        return false;
-    }
-
-    //Special Database connection to a specific user's table.
-    public UserDatabaseConnection(int uid){
+    //Default connection that sets up user table and verifies filestructure.
+    public DatabaseConnection(int uid){
         //TODO: process userID and ensure it's legit otherwise fail.
         userID = uid;
-        
+        try{
+            String databaseFolder = "./data";
+            if(!Files.isDirectory(Paths.get(databaseFolder))){
+                Files.createDirectory(Paths.get(databaseFolder));
+            }
+        }catch(IOException e){
+            System.out.println("Failed to create data folder, filesystem not intact. Failing with error: " + e.getMessage());
+            return;
+        }
+
         try{
             Class.forName("org.sqlite.JDBC");
         }catch(ClassNotFoundException e){
@@ -47,17 +48,78 @@ public class UserDatabaseConnection {
         }catch(SQLException e){
             System.out.println("SQLite Error Caught Upon Connection: " + e.getMessage());
         }finally{
-            //table setup
-            String sql = "CREATE TABLE IF NOT EXISTS USER_" + userID + "_RECS(id_num integer PRIMARY_KEY,date_added TEXT PRIMARY_KEY,rec_type TEXT,artist TEXT,album TEXT,song TEXT,link TEXT);";
+            String sql = "CREATE TABLE IF NOT EXISTS USERS(uid integer,firstname TEXT,lastname TEXT,username TEXT PRIMARY KEY,password TEXT);";
             try{
                 Statement stmt = conn.createStatement();
                 stmt.execute(sql);
+                if(userID > 0){
+                    sql = "CREATE TABLE IF NOT EXISTS USER_" + userID + "_RECS(id_num integer PRIMARY_KEY,date_added TEXT PRIMARY_KEY,rec_type TEXT,artist TEXT,album TEXT,song TEXT,link TEXT);";
+                    stmt.execute(sql);
+                }
             } catch (SQLException e) {
-                System.out.println("Failed to create/verify database for user " + userID + ": " + e.getMessage());
+                System.out.println("Failed to create user table or specific user table: " + e.getMessage());
                 return;
             }
         }
-        System.out.println("A new Database Connection abstraction was created for user " + userID + ".");
+        System.out.println("A new Database Connection abstraction was created.");
+    }
+
+    public void setUser(int user){
+        userID = user;
+    }
+
+    public ResultSet verifyUser(String user, String pass){
+        String sql = "SELECT * FROM USERS u WHERE u.username = '" + user + "';";
+        try{
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            System.out.println("Executed SQL: " + sql);
+            return rs;
+        } catch (SQLException e) {
+            System.out.println("Failed to verify user " + user + ": " + e.getMessage());
+            return null;
+        }
+    }
+
+    public boolean userExists(String user){
+        String sql = "SELECT * FROM USERS u WHERE u.username = '" + user + "';";
+        try{
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            System.out.println("Executed SQL: " + sql);
+            if(rs.next()){
+                return true;
+            }else{
+                return false;
+            }
+        } catch (SQLException e) {
+            System.out.println("Failed to verify user " + user + ": " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean createUser(String firstname, String lastname, String user, String pass){
+        int new_uid;
+        try{
+            String sql = "SELECT COUNT(username) FROM USERS;";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            new_uid = rs.getInt(1) + 1;
+        }catch(SQLException e){
+            System.out.println("Failed to query database: " + e.getMessage());
+            return false;
+        }
+
+        String sql = "INSERT INTO USERS VALUES( " + new_uid + ",'" + firstname + "','" + lastname + "','" + user + "','" + pass + "');";
+        try{
+            Statement stmt = conn.createStatement();
+            stmt.execute(sql);
+            System.out.println("Executed SQL: " + sql);
+            return true;
+        } catch (SQLException e) {
+            System.out.println("User " + user + " could not be created: " + e.getMessage());
+            return false;
+        }
     }
 
     public boolean addEntry(String rec_type, String artist, String album, String song, String link){
